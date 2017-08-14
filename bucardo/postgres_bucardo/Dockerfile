@@ -37,7 +37,6 @@ RUN cd /tmp && wget "https://ftp.postgresql.org/pub/source/v${PG_VERSION}/postgr
 
 RUN cd /tmp/postgresql-${PG_VERSION} \
 && ./configure \
---with-perl \
 --enable-integer-datetimes \
 --enable-thread-safety \
 --enable-tap-tests \
@@ -45,10 +44,14 @@ RUN cd /tmp/postgresql-${PG_VERSION} \
 --with-uuid=e2fs \
 --with-gnu-ld \
 --with-pgport=5432 \
---with-python \
+--with-system-tzdata=/usr/share/zoneinfo \
+--prefix=/usr/local \
+--with-includes=/usr/local/include \
+--with-libraries=/usr/local/lib \
 --with-openssl \
 --with-libxml \
 --with-libxslt \
+--with-perl \
 && make -j "$(nproc)" world \
 && make install-world \
 && make -C contrib install
