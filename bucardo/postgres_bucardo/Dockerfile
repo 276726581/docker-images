@@ -49,7 +49,9 @@ RUN cd /tmp/postgresql-${PG_VERSION} \
 --with-openssl \
 --with-libxml \
 --with-libxslt \
-&& make && make install
+&& make -j "$(nproc)" world \
+&& make install-world \
+&& make -C contrib install
 
 RUN sed -ri "s!^#?(listen_addresses)\s*=\s*\S+.*!\1 = '*'!" /usr/share/pgsql/postgresql.conf.sample
 
