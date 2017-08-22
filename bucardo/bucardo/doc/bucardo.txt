@@ -1,0 +1,64 @@
+
+修改 postgres_master pg_hba.conf
+host    all             bucardo         0.0.0.0/0               trust
+host    all             all             0.0.0.0/0               md5
+
+docker run -it --restart=always -m=1024m --name postgres_master \
+-e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres \
+-v /etc/localtime:/etc/localtime:ro -v /etc/timezone:/etc/timezone:ro \
+-v /data/soft/docker_containers/postgres_master:/var/lib/postgresql/data \
+-p 15432:5432 \
+276726581/postgres_bucardo
+
+
+docker run -d --restart=always -m=1024m --name=bucardo \
+-e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres \
+-v /etc/localtime:/etc/localtime:ro -v /etc/timezone:/etc/timezone:ro \
+276726581/bucardo /bin/sh
+
+--------------------------------------------------------------------
+
+安装
+bucardo install -d postgres -h 10.8.46.64 -p 35432 -U postgres
+
+更新
+bucardo upgrade -d postgres -h 10.8.46.64 -p 35432 -d bucardo
+
+查看配置
+bucardo show all -d postgres -h 10.8.46.64 -p 35432 -d bucardo
+
+查看同步列表
+bucardo list all -d postgres -h 10.8.46.64 -p 35432 -d bucardo
+
+--------------------------------------------------------------------
+
+1.添加源数据库
+bucardo add db src_logs type=postgres dbname=logs port=35432 host=10.8.46.64 user=postgres pass=postgres -h 10.8.46.64 -p 35432
+
+2.添加目标数据库
+bucardo add db dest_logs type=postgres dbname=logs port=35433 host=10.8.46.64 user=postgres pass=postgres -h 10.8.46.64 -p 35432
+
+3.添加数据库复制组（即一对复制关系）
+bucardo add dbgroup logs_dbgroup src_logs:source dest_logs:target -h 10.8.46.64 -p 35432
+
+4.添加表/序列
+bucardo add table public.access_log_2017_08 db=src_logs relgroup=logs_relgroup -h 10.8.46.64 -p 35432
+bucardo add sequence public.seq_access_log db=src_logs relgroup=logs_relgroup -h 10.8.46.64 -p 35432
+
+#5.添加复制群组（即复制一组表）可同过步骤4附加
+#bucardo add relgroup logs_relgroup all -h 10.8.46.64 -p 35432
+
+6.添加同步
+bucardo add sync logs_sync relgroup=logs_relgroup dbs=logs_dbgroup conflict_strategy=bucardo_latest -h 10.8.46.64 -p 35432
+启动时做一次全量同步
+bucardo add sync logs_sync relgroup=logs_relgroup dbs=logs_dbgroup conflict_strategy=bucardo_latest onetimecopy=2 -h 10.8.46.64 -p 35432
+
+7.启动
+bucardo start -h 10.8.46.64 -p 35432
+
+8.状态查看
+bucardo status -h 10.8.46.64 -p 35432
+bucardo status logs_sync -h 10.8.46.64 -p 35432
+
+9.数据库宕机时需要重启
+bucardo restart -h 10.8.46.64 -p 35432
