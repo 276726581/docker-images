@@ -23,3 +23,4 @@ RUN mkdir -p /var/run/bucardo && mkdir -p /var/log/bucardo
 
 RUN yum install -y java-1.8.0-openjdk-devel
 
+WORKDIR /app
