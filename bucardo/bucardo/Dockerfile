@@ -1,4 +1,4 @@
-FROM postgres_bucardo
+FROM 276726581/postgres_bucardo:9.6
 
 RUN yum install -y make wget \
 postgresql-plperl \
@@ -20,4 +20,6 @@ RUN cd /tmp/DBIx-Safe-1.2.5 && perl Makefile.PL && make && make install
 RUN cd /tmp/boolean-0.46 && perl Makefile.PL && make && make install
 
 RUN mkdir -p /var/run/bucardo && mkdir -p /var/log/bucardo
+
+RUN yum install -y java-1.8.0-openjdk-devel
 

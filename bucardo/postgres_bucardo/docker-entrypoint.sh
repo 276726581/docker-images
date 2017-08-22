@@ -87,6 +87,7 @@ if [ "$1" = 'postgres' ]; then
 
 		{
 			echo
+                        echo "host all bucardo all trust"
 			echo "host all all all $authMethod"
 		} >> "$PGDATA/pg_hba.conf"
 

@@ -1,4 +1,4 @@
-FROM centos
+FROM centos:7
 
 RUN yum update
 
@@ -31,12 +31,19 @@ ENV LANG en_US.utf8
 
 RUN mkdir /docker-entrypoint-initdb.d
 
-ENV PG_VERSION 9.6.0
+ENV PG_MAJOR 9.6
+ENV PG_VERSION 9.6.4
 RUN cd /tmp && wget "https://ftp.postgresql.org/pub/source/v${PG_VERSION}/postgresql-${PG_VERSION}.tar.gz" \
 && tar -xvf postgresql-${PG_VERSION}.tar.gz
 
 RUN cd /tmp/postgresql-${PG_VERSION} \
+&& awk '$1 == "#define" && $2 == "DEFAULT_PGSOCKET_DIR" && $3 == "\"/tmp\"" { $3 = "\"/var/run/postgresql\""; print; next } { print }' src/include/pg_config_manual.h > src/include/pg_config_manual.h.new \
+&& grep '/var/run/postgresql' src/include/pg_config_manual.h.new \
+&& mv src/include/pg_config_manual.h.new src/include/pg_config_manual.h
+
+RUN cd /tmp/postgresql-${PG_VERSION} \
 && ./configure \
+--build="x86_64-linux-gnu" \
 --enable-integer-datetimes \
 --enable-thread-safety \
 --enable-tap-tests \
@@ -52,17 +59,20 @@ RUN cd /tmp/postgresql-${PG_VERSION} \
 --with-libxml \
 --with-libxslt \
 --with-perl \
+--with-python \ 
 && make -j "$(nproc)" world \
 && make install-world \
 && make -C contrib install
 
-RUN sed -ri "s!^#?(listen_addresses)\s*=\s*\S+.*!\1 = '*'!" /usr/share/pgsql/postgresql.conf.sample
+RUN sed -ri "s!^#?(listen_addresses)\s*=\s*\S+.*!\1 = '*'!" /usr/local/share/postgresql/postgresql.conf.sample
 
 RUN mkdir -p /var/run/postgresql && chown -R postgres:postgres /var/run/postgresql && chmod 2777 /var/run/postgresql
 
-ENV PGDATA /var/lib/pgsql/data
+ENV PATH /usr/lib/postgresql/$PG_MAJOR/bin:$PATH
+ENV LD_LIBRARY_PATH /usr/local/lib:/usr/lib64/perl5/CORE:$LD_LIBRARY_PATH
+ENV PGDATA /var/lib/postgresql/data
 RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA"
-VOLUME /var/lib/pgsql/data
+VOLUME /var/lib/postgresql/data
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN ln -s usr/local/bin/docker-entrypoint.sh / 

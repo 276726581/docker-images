@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker build -t bucardo .
+docker build -t 276726581/bucardo .
