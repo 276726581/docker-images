@@ -1,0 +1,25 @@
+build:
+docker build -t 276726581/flink:1.6.0 .
+
+run master:
+docker run -it --rm \
+-e RPC_ADDRESS=192.168.1.168 \
+-p 6123:6123 \
+-p 6124:6124 \
+-p 8081:8081 \
+276726581/flink:1.6.0 master.sh
+
+run slave:
+docker run -it --rm \
+-e RPC_ADDRESS=192.168.1.168 \
+276726581/flink:1.6.0 slave.sh
+
+env:
+ENV RPC_ADDRESS Rpc地址
+ENV RPC_PORT Rpc端口
+ENV JOB_MEM JobManager内存
+ENV TASK_MEM TaskManager内存
+ENV TASK_SLOTS 并行任务数
+ENV REST_PORT Web管理端口
+ENV BLOB_SERVER_PORT BlobServer端口
+ENV RUN_TYPE master/slave
