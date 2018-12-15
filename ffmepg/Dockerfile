@@ -7,7 +7,7 @@ USER root
 RUN mkdir -p /build
 COPY ./ffmpeg-n4.1 /build/ffmpeg-n4.1
 COPY ./fdk-aac-0.1.6 /build/fdk-aac-0.1.6
-COPY ./opencore-amr-0.1.5 /build/opencore-amr-0.1.5
+COPY ./opencore-amr-0.1.5.1 /build/opencore-amr-0.1.5.1
 COPY ./opus-1.3 /build/opus-1.3
 COPY ./vo-amrwbenc-0.1.3 /build/vo-amrwbenc-0.1.3
 
@@ -15,7 +15,7 @@ WORKDIR /build
 
 RUN yum -y install gcc gcc-c++ make
 RUN cd /build/fdk-aac-0.1.6 && ./configure && make -j 4 && make install
-RUN cd /build/opencore-amr-0.1.5 && ./configure && make -j 4 && make install
+RUN cd /build/opencore-amr-0.1.5.1 && ./configure && make -j 4 && make install
 RUN cd /build/opus-1.3 && ./configure && make -j 4 && make install
 RUN cd /build/vo-amrwbenc-0.1.3 && ./configure && make -j 4 && make install
 
